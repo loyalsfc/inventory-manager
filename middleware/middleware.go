@@ -18,13 +18,27 @@ type handlerFunc func(*gin.Context, uuid.UUID)
 
 func (m *Middleware) MiddlewareAuth(handler handlerFunc) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		_, err := utils.GetAPIKey(&ctx.Request.Header)
+		token, err := utils.GetAccessToken(&ctx.Request.Header)
 
 		if err != nil {
 			response.Error(ctx, 301, fmt.Sprintf("error %v", err))
 			return
 		}
 
-		handler(ctx, uuid.New())
+		tokens, err := utils.ParseToken(token)
+		if err != nil {
+			fmt.Println(err)
+			response.Error(ctx, 301, fmt.Sprintf("error %v", err))
+			return
+		}
+
+		userId, err := uuid.Parse(fmt.Sprintf("%v", tokens))
+
+		if err != nil {
+			response.Error(ctx, 301, fmt.Sprintf("error %v", err))
+			return
+		}
+
+		handler(ctx, userId)
 	}
 }

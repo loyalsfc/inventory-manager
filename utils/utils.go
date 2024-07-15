@@ -46,7 +46,7 @@ func GetIdFromParams(ctx *gin.Context) (uuid.UUID, error) {
 	return ID, nil
 }
 
-func GetAPIKey(header *http.Header) (string, error) {
+func GetAccessToken(header *http.Header) (string, error) {
 	val := header.Get("Authorization")
 
 	if val == "" {
@@ -65,27 +65,46 @@ func GetAPIKey(header *http.Header) (string, error) {
 	return vals[1], nil
 }
 
+var secretKey []byte = []byte("secret-key")
+
 func GenerateToken(userID uuid.UUID) (string, error) {
 	var (
-		key []byte
-		t   *jwt.Token
-		s   string
+		t *jwt.Token
+		s string
 	)
-
-	key = []byte("secret-key")
 
 	t = jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"iss": "my-auth-server",
-			"sub": "john",
-			"foo": 2,
+			"user-id": userID,
 		})
-	s, err := t.SignedString(key)
+	s, err := t.SignedString(secretKey)
 
 	if err != nil {
 		return "", err
 	}
 	return s, nil
+}
+
+func ParseToken(tokenString string) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, errors.New("invalid token generated")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok {
+		return nil, err
+	}
+
+	return claims["user-id"], nil
 }
 
 func GetIDInRoute(ctx *gin.Context, IDName string) (uuid.UUID, error) {

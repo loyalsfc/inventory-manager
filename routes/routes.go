@@ -36,8 +36,8 @@ func InitRoutes(db *gorm.DB) *gin.Engine {
 	}
 
 	authRoutes := r.Group("/user")
-	authRoutes.POST("/add-user", authHandler.NewUser)
-	authRoutes.POST("/user-signin", authHandler.Signin)
+	authRoutes.POST("/new", authHandler.NewUser)
+	authRoutes.POST("/signin", authHandler.Signin)
 
 	categoryModel := &models.CategoryModel{
 		DB: db,
