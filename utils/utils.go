@@ -128,3 +128,36 @@ func IsValidUUID(uuid string) bool {
 	var uuidRegex = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
 	return uuidRegex.MatchString(uuid)
 }
+
+type UserRole string
+
+const (
+	AdminRole      UserRole = "admin"
+	SupervisorRole UserRole = "supervisor"
+	OperatorRole   UserRole = "operator"
+	ViewerRole     UserRole = "viewer"
+)
+
+func IsValidRole(role UserRole) bool {
+	switch role {
+	case AdminRole, SupervisorRole, OperatorRole, ViewerRole:
+		return true
+	default:
+		return false
+	}
+}
+
+func RoleLevel(role UserRole) int {
+	switch role {
+	case AdminRole:
+		return 4
+	case SupervisorRole:
+		return 3
+	case OperatorRole:
+		return 2
+	case ViewerRole:
+		return 1
+	default:
+		return 0
+	}
+}

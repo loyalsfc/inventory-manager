@@ -2,6 +2,7 @@ package data
 
 import (
 	"github.com/google/uuid"
+	"github.com/loyalsfc/investrite/utils"
 )
 
 type AddProductParams struct {
@@ -27,4 +28,16 @@ type OrderProducts struct {
 type OrderParams struct {
 	Products      []OrderProducts `json:"products"`
 	PaymentMethod PaymentMethod   `json:"payment_method"`
+}
+
+type FormData struct {
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
+
+type UpdateUserParams struct {
+	Email string         `json:"email"`
+	Role  utils.UserRole `json:"role"`
 }

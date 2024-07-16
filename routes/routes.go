@@ -9,6 +9,7 @@ import (
 	"github.com/loyalsfc/investrite/controller/categories"
 	"github.com/loyalsfc/investrite/controller/items"
 	"github.com/loyalsfc/investrite/controller/orders"
+	"github.com/loyalsfc/investrite/controller/user"
 	"github.com/loyalsfc/investrite/middleware"
 	"github.com/loyalsfc/investrite/models"
 	"gorm.io/gorm"
@@ -35,9 +36,18 @@ func InitRoutes(db *gorm.DB) *gin.Engine {
 		UserService: *userService,
 	}
 
-	authRoutes := r.Group("/user")
-	authRoutes.POST("/new", authHandler.NewUser)
+	authRoutes := r.Group("/auth")
+	authRoutes.POST("/register", authHandler.NewUser)
 	authRoutes.POST("/signin", authHandler.Signin)
+
+	userHandler := &user.UserHandler{
+		UserService: *userService,
+	}
+
+	userRoutes := r.Group("/user")
+	userRoutes.GET("/all", middlware.MiddlewareAuth(userHandler.GetAllUsers))
+	userRoutes.POST("/update-role", middlware.MiddlewareAuth(userHandler.UpdateRole))
+	userRoutes.DELETE("/:userID", middlware.MiddlewareAuth(userHandler.DeleteUser))
 
 	categoryModel := &models.CategoryModel{
 		DB: db,
@@ -49,9 +59,10 @@ func InitRoutes(db *gorm.DB) *gin.Engine {
 
 	categoryRoute := r.Group("/category")
 	categoryRoute.POST("/new-category", middlware.MiddlewareAuth(categoryHandler.NewCategory))
-	categoryRoute.PUT("/:id", categoryHandler.EditCategory)
-	categoryRoute.DELETE("/:id", categoryHandler.DeleteCategory)
-	categoryRoute.GET("/", categoryHandler.GetCategories)
+	categoryRoute.GET("/:id", middlware.MiddlewareAuth(categoryHandler.GetCategory))
+	categoryRoute.PUT("/:id", middlware.MiddlewareAuth(categoryHandler.EditCategory))
+	categoryRoute.DELETE("/:id", middlware.MiddlewareAuth(categoryHandler.DeleteCategory))
+	categoryRoute.GET("/", middlware.MiddlewareAuth(categoryHandler.GetCategories))
 
 	productService := &models.ProductService{
 		DB: db,

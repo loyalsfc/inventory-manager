@@ -79,8 +79,14 @@ func (c CategoryModel) EditCategory(name string, catID uuid.UUID) error {
 		return errors.New("category name cannot be less than 3")
 	}
 
+	_, err := c.FindCategoryById(catID)
+
+	if err != nil {
+		return errors.New("category not found")
+	}
+
 	if categoryExist := c.IsCategoryExist(name); !categoryExist {
-		return errors.New("category does not exist")
+		return errors.New("category name already exist")
 	}
 
 	result := c.DB.Save(Category{

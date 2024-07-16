@@ -46,6 +46,7 @@ func (p ProductService) GetProductById(id uuid.UUID) (product *Product, err erro
 }
 
 func (p ProductService) CreateProduct(data *data.AddProductParams) (*Product, error) {
+
 	if len(data.Name) < 3 {
 		return nil, errors.New("invalid product name")
 	}
@@ -84,6 +85,10 @@ func (p ProductService) GetAllProducts() (*[]Product, error) {
 }
 
 func (p ProductService) UpdateProduct(id uuid.UUID, data *data.AddProductParams) error {
+	if len(data.Name) < 3 {
+		return errors.New("invalid product name")
+	}
+
 	product, err := p.GetProductById(id)
 	if err != nil {
 		return err

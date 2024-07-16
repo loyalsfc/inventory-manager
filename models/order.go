@@ -36,7 +36,7 @@ func (o OrderService) CreateOrder(param data.OrderParams) (*Order, error) {
 	amountPaid := param.PaymentMethod.Cash + param.PaymentMethod.Pos + param.PaymentMethod.Transfer
 
 	if amountPaid == 0 {
-		return nil, errors.New("please enter a valid payment method")
+		return nil, errors.New("please include a valid payment method")
 	}
 
 	// Calculate total order price

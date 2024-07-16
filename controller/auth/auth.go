@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/loyalsfc/investrite/data"
 	jsonformat "github.com/loyalsfc/investrite/jsonFormat"
 	"github.com/loyalsfc/investrite/models"
 	"github.com/loyalsfc/investrite/response"
@@ -15,44 +15,18 @@ type AuthHandler struct {
 	UserService models.UserService
 }
 
-type FormData struct {
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-}
-
 func (h AuthHandler) NewUser(ctx *gin.Context) {
-	var form FormData
+	var form data.FormData
 
 	if ctx.ShouldBind(&form) != nil {
 		response.Error(ctx, 403, "invalid form parameter")
 		return
 	}
 
-	if userExist := h.UserService.IsUserExist(form.Email); userExist {
-		response.Error(ctx, 403, "user with the email already exist")
-		return
-	}
+	user, err := h.UserService.CreateUser(form)
 
-	password, err := utils.HashPassword(form.Password)
 	if err != nil {
-		response.Error(ctx, 501, "internal error occured")
-		return
-	}
-
-	user := models.User{
-		FirstName: form.FirstName,
-		LastName:  form.LastName,
-		Email:     form.Email,
-		Password:  password,
-		UserID:    uuid.New(),
-	}
-
-	result := h.UserService.DB.Create(&user)
-
-	if result.Error != nil {
-		response.Error(ctx, 401, "An error occured")
+		response.Error(ctx, 401, fmt.Sprintf("%v", err))
 		return
 	}
 
@@ -60,7 +34,7 @@ func (h AuthHandler) NewUser(ctx *gin.Context) {
 }
 
 func (h AuthHandler) Signin(ctx *gin.Context) {
-	var user FormData
+	var user data.FormData
 	ctx.Bind(&user)
 
 	if userExist := h.UserService.IsUserExist(user.Email); !userExist {

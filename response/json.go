@@ -10,10 +10,18 @@ func Success(ctx *gin.Context, message string, payload interface{}) {
 	})
 }
 
-func Error(ctx *gin.Context, status int, message string) {
-	ctx.JSON(403, gin.H{
+func Error(ctx *gin.Context, statuscode int, message string) {
+	ctx.JSON(statuscode, gin.H{
 		"status":  "unsuccessful",
 		"message": message,
+		"payload": nil,
+	})
+}
+
+func PermissionError(ctx *gin.Context) {
+	ctx.JSON(403, gin.H{
+		"status":  "unsuccessful",
+		"message": "permission not granted",
 		"payload": nil,
 	})
 }

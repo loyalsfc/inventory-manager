@@ -1,8 +1,11 @@
 package orders
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/loyalsfc/investrite/controller/role"
 	"github.com/loyalsfc/investrite/data"
 	"github.com/loyalsfc/investrite/models"
 	"github.com/loyalsfc/investrite/response"
@@ -17,6 +20,18 @@ func (o OrderHandler) NewOrder(ctx *gin.Context, userId uuid.UUID) {
 	var params data.OrderParams
 	ctx.Bind(&params)
 
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 2 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	order, err := o.OrderService.CreateOrder(params)
 
 	if err != nil {
@@ -28,6 +43,18 @@ func (o OrderHandler) NewOrder(ctx *gin.Context, userId uuid.UUID) {
 }
 
 func (o OrderHandler) GetOrders(ctx *gin.Context, userId uuid.UUID) {
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 2 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	orders, err := o.OrderService.GetAllOrders()
 
 	if err != nil {
@@ -39,6 +66,18 @@ func (o OrderHandler) GetOrders(ctx *gin.Context, userId uuid.UUID) {
 }
 
 func (o OrderHandler) GetOrder(ctx *gin.Context, userId uuid.UUID) {
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 2 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	id, err := utils.GetIDInRoute(ctx, "orderId")
 
 	if err != nil {
@@ -56,6 +95,18 @@ func (o OrderHandler) GetOrder(ctx *gin.Context, userId uuid.UUID) {
 }
 
 func (o OrderHandler) DeleteOrder(ctx *gin.Context, userId uuid.UUID) {
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 4 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	id, err := utils.GetIDInRoute(ctx, "orderId")
 
 	if err != nil {

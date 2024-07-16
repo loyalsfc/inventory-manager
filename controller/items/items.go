@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/loyalsfc/investrite/controller/role"
 	"github.com/loyalsfc/investrite/data"
 	"github.com/loyalsfc/investrite/models"
 	"github.com/loyalsfc/investrite/response"
@@ -19,6 +20,18 @@ func (h ProductHandler) NewProduct(ctx *gin.Context, userId uuid.UUID) {
 	var params data.AddProductParams
 
 	ctx.Bind(&params)
+
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("role error %v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 3 {
+		response.PermissionError(ctx)
+		return
+	}
 
 	product, err := h.ProductService.CreateProduct(&params)
 
@@ -38,6 +51,18 @@ func (h ProductHandler) GetProduct(ctx *gin.Context, userId uuid.UUID) {
 		return
 	}
 
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 1 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	product, err := h.ProductService.GetProductById(productId)
 
 	if err != nil {
@@ -49,6 +74,18 @@ func (h ProductHandler) GetProduct(ctx *gin.Context, userId uuid.UUID) {
 }
 
 func (h ProductHandler) GetProducts(ctx *gin.Context, userId uuid.UUID) {
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 1 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	products, err := h.ProductService.GetAllProducts()
 
 	if err != nil {
@@ -60,14 +97,26 @@ func (h ProductHandler) GetProducts(ctx *gin.Context, userId uuid.UUID) {
 }
 
 func (h ProductHandler) UpdateProduct(ctx *gin.Context, userId uuid.UUID) {
-	productId, err := utils.GetIDInRoute(ctx, "productID")
-
 	var params data.AddProductParams
 
 	ctx.Bind(&params)
 
+	productId, err := utils.GetIDInRoute(ctx, "productID")
+
 	if err != nil {
 		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 3 {
+		response.PermissionError(ctx)
 		return
 	}
 
@@ -89,6 +138,18 @@ func (h ProductHandler) DeleteProduct(ctx *gin.Context, userId uuid.UUID) {
 		return
 	}
 
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 3 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	productErr := h.ProductService.DeleteProduct(productId)
 
 	if productErr != nil {
@@ -107,6 +168,18 @@ func (h ProductHandler) IncreaseProductQuantity(ctx *gin.Context, userId uuid.UU
 		return
 	}
 
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 2 {
+		response.PermissionError(ctx)
+		return
+	}
+
 	qty, productErr := h.ProductService.IncrementQuantity(productId)
 
 	if productErr != nil {
@@ -122,6 +195,18 @@ func (h ProductHandler) DecreaseProductQuantity(ctx *gin.Context, userId uuid.UU
 
 	if err != nil {
 		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	userRole, err := role.GetUserRole(userId)
+
+	if err != nil {
+		response.Error(ctx, 403, fmt.Sprintf("%v", err))
+		return
+	}
+
+	if utils.RoleLevel(userRole) < 2 {
+		response.PermissionError(ctx)
 		return
 	}
 

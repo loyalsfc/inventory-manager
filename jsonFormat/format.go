@@ -7,9 +7,9 @@ type SigninStruct struct {
 	UserData    models.User `json:"user_data"`
 }
 
-func SignInToSignIn(user models.User, token string) SigninStruct {
+func SignInToSignIn(user *models.User, token string) SigninStruct {
 	return SigninStruct{
 		AccessToken: token,
-		UserData:    user,
+		UserData:    *user,
 	}
 }
